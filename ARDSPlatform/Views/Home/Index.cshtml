@@ -1,0 +1,51 @@
+﻿@{
+    ViewBag.Title = "ARDS数据分析与可视化平台";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARDS数据分析与可视化平台</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.min.js"></script>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet">
+    <script src="~/Scripts/echarts.min.js"></script>
+    <style>
+        .card {
+            border: 1px solid #ddd;
+            padding: 40px;
+            background-image: url('../image/ayyfy2.png');
+            background-repeat: no-repeat;
+            background-size: cover;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 790px;
+            margin-left: 100px;
+            margin-top: -20px;
+            margin-right: -20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="col-md-5" style="display: flex; align-items: center; margin-left: 28%;margin-top:13%;">
+            <img src="~/image/zzyxk.png" alt="安医一附院" class="img-fluid">
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            if (window.performance.navigation.type !== 1 && window.performance.navigation.type !== 2) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '欢迎登录本平台！',
+                    showConfirmButton: true,
+                    willClose: () => {
+                        // 关闭弹窗后可以执行的操作
+                    }
+                });
+                //alert('欢迎登录本平台！');
+            }
+        });
+    </script>
+</body>
+</html>

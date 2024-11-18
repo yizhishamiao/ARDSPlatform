@@ -1,0 +1,51 @@
+﻿.is-invalid::-webkit-input-placeholder {
+    color: red;
+}
+
+.is-invalid::-moz-placeholder {
+    color: red;
+}
+
+.is-invalid:-ms-input-placeholder {
+    color: red;
+}
+
+.is-invalid::placeholder {
+    color: red;
+}
+
+body {
+    background-image: url('../image/ayyfy2.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+h1 {
+    width: 100%;
+    margin-top: 190px;
+    text-align: center;
+}
+
+.col-md-5 img {
+/*    调整图片的大小，可设置 width 和 height 属性来控制图片的显示尺寸。 */
+/*    设置图片的边框样式，可设置 border 属性来添加边框或者改变边框颜色和宽度。 */
+/*    调整图片的对齐方式，可设置 vertical-align 或 display 属性结合其他 CSS 属性来实现不同的对齐效果。*/
+}
+
+.panel-body button[type="submit"] {
+/*改变按钮的背景颜色，使用 background-color 属性来突出显示或与页面整体风格协调。*/
+/*设置按钮的文字颜色，通过 color 属性来确保文字清晰可读或与背景形成对比。*/
+/*添加边框样式，如 border 属性来给按钮添加边框效果，或者去除边框以实现简洁的设计。*/
+/*调整按钮的大小，通过设置 width 和 height 属性来适应页面布局需求。*/
+width:100px;
+}
+/*添加鼠标悬停效果，使用 :hover 伪类来改变按钮在鼠标悬停时的外观，提供更好的用户交互反馈。 */
+    .panel-body button[type="submit"]:hover {
+        background-color: #5bbeff; /* 悬停时的背景颜色，可以根据你的需求修改 */
+        color: blue; /* 悬停时的文字颜色，可以根据你的需求修改 */
+    }
+
+
+.errorMessage p {
+    color: red;
+}

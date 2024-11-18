@@ -1,0 +1,331 @@
+﻿@using ARDSPlatform.Controllers;
+
+@model IEnumerable<ARDSPlatform.Models.FileUploadRecord>
+@{
+    ViewBag.Title = "数据上传";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="/Content/bootstrap.min.css" rel="stylesheet" />
+
+    <style>
+        .card {
+            border: 1px solid #ddd;
+            padding: 3%;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 790px;
+            margin-left: 6.92%;
+            margin-top: -1.38%;
+            margin-right: -1.38%;
+        }
+
+        .table {
+            background-color: white;
+            border: 1px solid #ddd;
+            height: 250px;
+            width: 60%;
+            margin-left: 19.6%;
+        }
+
+        .btn-upload {
+            width: 7%;
+            border: 1px solid #ddd;
+        }
+
+            .btn-upload:hover {
+                background-color: skyblue;
+                color: white;
+            }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            vertical-align: middle; /* 添加垂直居中 */
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        /* 为表格单元格设置水平垂直居中 */
+        table tbody tr td {
+            display: table-cell;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .my-progress-bar {
+            height: 30px;
+        }
+
+        .my-progress-bar-inner {
+            width: 0%;
+            text-align: center;
+            color: white;
+            background-color: blue;
+        }
+
+        .progress-bar-hidden {
+            display: none;
+            width: 0%;
+            text-align: center;
+            color: white;
+            background-color: blue;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="card">
+        <div class="container" style="text-align: center; margin-top: 3%;">
+            <h4>请选择待上传的数据文件 支持 CSV、XSLX</h4>
+            <div>&nbsp;</div>
+            <form id="uploadForm" action="/UploadData/Upload" method="post" enctype="multipart/form-data">
+                <div class="form-group" style="margin-left: 10%;">
+                    <input type="file" class="form-control-file" id="uploadedFile" name="file" required accept=".csv,.xlsx">
+                </div>
+                <div>&nbsp;</div>
+                <button type="submit" class="btn btn-upload">上传</button>
+            </form>
+            <div>&nbsp;</div>
+            <h5>上传进度</h5>
+            <div id="progressBar" class="my-progress-bar progress mt-3" style="height: 30px; display: block;">
+                <div class="my-progress-bar-inner progress-bar" role="progressbar" style="height: 100%; width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+            </div>
+            <div>&nbsp;</div>
+            <h5>历史记录</h5>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="text-align: center; vertical-align: middle;">文件名称</th>
+                        <th style="text-align: center; vertical-align: middle;">文件类型</th>
+                        <th style="text-align: center; vertical-align: middle;">上传时间</th>
+                        <th style="text-align: center; vertical-align: middle;">上传进度</th>
+                    </tr>
+                </thead>
+                <tbody id="historyRecords" style="border-bottom: 1px solid #ddd;">
+                    <!-- 历史记录数据将通过 JavaScript 动态填充 -->
+                    @foreach (var record in Model)
+                    {
+                        <tr>
+                            <td>@record.FileName</td>
+                            <td>@record.FileType</td>
+                            <td>@record.UploadTime</td>
+                            <td>100%</td>
+                        </tr>
+                    }
+
+                </tbody>
+            </table>
+            <!-- 添加分页导航 -->
+            <div id="pagination" style="margin-top: 10px;">
+                <button id="prevPage" disabled>上一页</button>
+                <span id="pageInfo">第 1 页</span>
+                <button id="nextPage">下一页</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+
+<script>
+    // 全局变量用于分页
+    let currentPage = 1;
+    const recordsPerPage = 10;
+
+    document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+        var fileInput = document.getElementById('uploadedFile');
+        var file = fileInput.files[0];
+        if (file) {
+            var extension = file.name.split('.').pop().toLowerCase();
+            if (extension !== 'csv' && extension !== 'xlsx') {
+                Swal.fire('错误', '只允许上传 CSV 或 XLSX 类型文件！', 'error');
+                document.getElementById('fileTypeError').textContent = '文件类型错误，请上传 CSV 或 XLSX 文件。';
+                e.preventDefault();
+                return false;
+            }
+        }
+        e.preventDefault();
+        var formData = new FormData(this);
+        try {
+            // 获取文件名不带后缀并存储在一个临时变量中
+            var fileName = file ? file.name : null;
+            var fileNameWithoutExtensionTemp = fileName ? fileName.split('.').slice(0, -1).join('.') : null;
+
+            // 检查文件名是否已存在
+            const response = await fetch(`/UploadData/CheckFileNameExists?fileNameWithoutExtension=${fileNameWithoutExtensionTemp}`);
+            const exists = await response.json();
+            if (exists) {
+                Swal.fire('错误', '该文件名已存在！', 'error');
+                // 进度条保持默认状态
+                return false;
+            }
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', this.action, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.upload.addEventListener('progress', function (event) {
+                if (event.lengthComputable) {
+                    const progress = Math.round((event.loaded / event.total) * 100);
+                    console.log('Loaded:', event.loaded, 'Total:', event.total, 'Progress:', progress);
+                    document.getElementById('progressBar').querySelector('.progress-bar').style.width = progress + '%';
+                    document.getElementById('progressBar').querySelector('.progress-bar').textContent = progress + '%';
+                } else {
+                    console.log('Progress not computable.');
+                }
+            });
+            const xhrResponse = await new Promise((resolve, reject) => {
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            try {
+                                resolve(xhr.responseText);
+                            } catch (error) {
+                                reject('Invalid JSON response');
+                            }
+                        } else {
+                            reject(xhr.statusText);
+                        }
+                    }
+                };
+                xhr.send(formData);
+            });
+            const data = await JSON.parse(xhrResponse);
+            if (data.success) {
+                const fileName = data.fileName;
+                const fileExtension = fileName.split('.').pop();
+                const uploadTime = new Date().toLocaleString();
+                document.getElementById('historyRecords').insertAdjacentHTML('afterbegin', `<tr><td>${fileName}</td><td>${fileExtension}</td><td>${uploadTime}</td><td>100%</td></tr>`);
+                Swal.fire('成功', '文件上传成功！', 'success');
+                // 更新分页信息
+                currentPage = 1;
+                fetchHistoryRecords();
+                // 在重置进度条之前检查其状态
+                console.log('Before reset, progress bar width:', document.getElementById('progressBar').querySelector('.progress-bar').style.width);
+                // 使用单独的函数重置进度条
+                resetProgressBar();
+                console.log('After reset, progress bar width:', document.getElementById('progressBar').querySelector('.progress-bar').style.width);
+
+            } else {
+                Swal.fire('错误', data.message || '文件上传失败，请稍后重试！具体错误信息：' + JSON.stringify(data), 'error');
+            }
+        } catch (error) {
+            if (error === 'Invalid JSON response') {
+                Swal.fire('错误', '服务器响应不是有效的 JSON 格式。', 'error');
+            } else {
+                console.error(error);
+                Swal.fire('错误', '文件上传失败，请稍后重试！错误信息：' + error.message, 'error');
+            }
+        }
+        return true;
+    });
+
+    document.getElementById('uploadedFile').addEventListener('change', function () {
+        var fileInput = this;
+        var file = fileInput.files[0];
+        if (file) {
+            var extension = file.name.split('.').pop().toLowerCase();
+            if (extension !== 'csv' && extension !== 'xlsx') {
+                Swal.fire('错误', '只允许上传 CSV 或 XLSX 类型文件！', 'error');
+                fileInput.value = ''; // 清空文件选择输入框
+                // 使用单独的函数重置进度条
+                resetProgressBar();
+            }
+        } else {
+            // 使用单独的函数重置进度条
+            resetProgressBar();
+        }
+    });
+
+    function resetProgressBar() {
+        const progressBar = document.getElementById('progressBar').querySelector('.progress-bar');
+        progressBar.classList.add('progress-bar-hidden');
+        setTimeout(() => {
+            progressBar.classList.remove('progress-bar-hidden');
+        }, 100);
+    }
+
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        if (!isNaN(date.getTime())) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
+        return 'Invalid Date';
+    }
+
+    async function fetchHistoryRecords() {
+        try {
+            const response = await fetch('/UploadData/GetUploadHistory?page=' + currentPage);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.length === 0) {
+                    console.log('没有历史记录数据。');
+                    const tableBody = document.getElementById('historyRecords');
+                    tableBody.innerHTML = '<tr><td colspan="4">没有历史记录。</td></tr>';
+                } else {
+                    const tableBody = document.getElementById('historyRecords');
+                    tableBody.innerHTML = '';
+                    data.forEach(record => {
+                        let formattedDate;
+                        if (record && record.UploadTime) {
+                            formattedDate = moment(record.UploadTime).format('YYYY-MM-DD HH:mm:ss');
+                        } else {
+                            formattedDate = 'Invalid Date';
+                        }
+                        tableBody.insertAdjacentHTML('beforeend', `<tr><td>${record.FileName}</td><td>${record.FileType}</td><td>${formattedDate}</td><td>100%</td></tr>`);
+                    });
+                }
+                // 更新分页信息
+                const totalRecords = await fetch('/UploadData/GetTotalUploadRecords');
+                const total = await totalRecords.json();
+                const totalPages = Math.ceil(total / recordsPerPage);
+                document.getElementById('pageInfo').textContent = `第 ${currentPage} 页`;
+                document.getElementById('prevPage').disabled = currentPage === 1;
+                document.getElementById('nextPage').disabled = currentPage === totalPages;
+            } else {
+                console.log('服务器响应错误：', response.statusText);
+                Swal.fire('错误', response.statusText || '文件上传失败，请稍后重试！', 'error');
+            }
+        } catch (error) {
+            console.log('获取历史记录失败：', error);
+            Swal.fire('错误', '获取历史记录失败！', 'error');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchHistoryRecords);
+
+    document.getElementById('prevPage').addEventListener('click', function () {
+        if (currentPage > 1) {
+            currentPage--;
+            fetchHistoryRecords();
+        }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', function () {
+        const totalRecordsResponse = fetch('/UploadData/GetTotalUploadRecords');
+        totalRecordsResponse.then(totalRecords => totalRecords.json())
+            .then(total => {
+                const totalPages = Math.ceil(total / recordsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    fetchHistoryRecords();
+                }
+            });
+    });
+</script>

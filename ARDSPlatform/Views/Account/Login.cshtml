@@ -1,0 +1,129 @@
+﻿@model ARDSPlatform.Models.LoginViewModel
+
+@{
+    Layout = null;    
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录</title>
+    @*引入Bootstrap样式*@
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    @*引入自定义的 CSS 文件,可以使用 CSS 的优先级规则来覆盖 Bootstrap 的样式*@
+    <link href="~/Content/custom.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.min.js"></script>
+
+</head>
+<body>
+    <div class="container h-100">
+        <div class="row h-100 justify-content-center align-items-center">
+            <div class="col-md-5">
+                <h1 style="width: 100%; margin-top: 190px; text-align: center;">ARDS数据分析与可视化平台</h1>
+                &nbsp;
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-5" style="display: flex; align-items: center; margin-left: 22px;">
+                                <img src="~/image/zzyxk.png" alt="安医一附院" class="img-fluid">
+                            </div>
+                            <div class="col-md-6" style="display: table;">
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+                                        @using (Html.BeginForm("Login", "Account", FormMethod.Post, new { id = "loginForm" }))
+                                        {
+                                            <div class="form-group">
+                                                @Html.TextBoxFor(m => m.Account, new { @id = "Account", @class = "form-control", placeholder = "账号" })
+                                            </div>
+                                            <div>&nbsp;</div>
+                                            <div class="form-group">
+                                                @Html.PasswordFor(m => m.Password, new { @id = "Password", @class = "form-control", placeholder = "密码" })
+                                            </div>
+                                            <div>&nbsp;</div>
+                                            <table style="width:100%">
+                                                <tr>
+                                                    <td></td>
+                                                    <td style="text-align:center;">
+                                                        <button type="submit" class="btn btn-primary btn-block">登录</button>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        }
+                                    </div>
+
+
+                                </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h6 style="width: 100%; margin-top: 26%; text-align: center;">&copy; @DateTime.Now.Year - 安徽医科大学第一附属医院 重症医学科</h6>
+    <script>
+        document.querySelector('button[type="submit"]').addEventListener('click', function (event) {
+    event.preventDefault();
+    var AccountValue = $('#Account').val().trim();
+    var PasswordValue = $('#Password').val().trim();
+
+    // 验证输入
+    if (AccountValue === '') {
+        $('#Account').css('border-color', 'red').attr('placeholder', '账号不能为空！');
+        return;
+    } else {
+        $('#Account').css('border-color', 'black');
+    }
+
+    if (PasswordValue === '') {
+        $('#Password').css('border-color', 'red').attr('placeholder', '密码不能为空！');
+        return;
+    } else {
+        $('#Password').css('border-color', 'black');
+    }
+
+    // 发起AJAX请求
+    $.ajax({
+        url: '@Url.Action("Login", "Account")',
+        type: 'POST',
+        data: { Account: AccountValue, Password: PasswordValue },
+        success: function (response) {
+            if (response.success) {
+                // 如果登录成功，重定向到首页或个人中心
+                window.location.href = '@Url.Action("Index", "Home")';
+            } else {
+                Swal.fire('错误', response.message, 'error');
+            }
+        },
+        error: function () {
+            Swal.fire('错误', '发生错误，请稍后重试。', 'error');
+        }
+    });
+});
+
+
+        // 判断页面是否刷新
+        if (window.performance.navigation.type === 1 ) {
+            // 页面刷新，清空输入框
+            document.getElementById('Account').value = '';
+            document.getElementById('Password').value = '';
+        }
+        if (window.performance.navigation.type === 2) {
+            // 页面回退，清空密码输入框
+            document.getElementById('Password').value = '';
+        }
+
+
+    </script>
+
+    <!-- 引入 Bootstrap JavaScript 文件 -->
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    
+</body>
+</html>

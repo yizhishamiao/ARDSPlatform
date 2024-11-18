@@ -1,0 +1,158 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <link href="/Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="../Scripts/echarts.js"></script>
+    <style>
+        #sidebar {
+            position:absolute;
+            left: 0;
+            top: 56px; /* 调整菜单栏距离顶部的距离 */
+            bottom: 0;
+            width: 13.7%;
+            background-color: #f8f9fa;
+            padding: 2%;
+        }
+
+            #sidebar ul {
+                list-style: none;
+                padding: 0;
+                margin-top:5%;
+                margin-left: 20%;
+            }
+
+        #header {
+            background-color: skyblue;
+        }
+
+
+
+
+        #sidebar li {
+            margin-bottom: 20%;
+        }
+
+        #sidebar a {
+            text-decoration: none;
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+
+
+
+            #sidebar a:hover {
+                color: blue;
+            }
+
+        
+
+        #sidebar hr {
+            border: none;
+            border-top: 1px solid #ddd;
+        }
+
+        .content-wrapper {
+            margin-left: 6.2%;
+            padding: 1.8%;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="header"> <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark "> 
+                          <div class="container">
+                              @Html.ActionLink("ARDS数据分析与可视化平台", "Index", "Home", new { area = "" }, new { @class = "navbar-brand home-link", id = "homeLink" })
+                              <div class="now-time pa" style="color:white;">
+                                  <div id="js189165jsclock"></div>
+                                  <script>
+                                      function js189165jstick() {
+                                          try {
+                                              var hoursjs189165js, minutesjs189165js, secondsjs189165js, xfilejs189165js;
+                                              var intHoursjs189165js, intMinutesjs189165js, intSecondsjs189165js;
+                                              var todayjs189165js, thedayjs189165js;
+                                              var timeStringjs189165js = "";
+                                              todayjs189165js = new Date();
+                                              function initArrayjs189165js() {
+                                                  this.length = initArrayjs189165js.arguments.length
+                                                  for (var i = 0; i < this.length; i++)
+                                                      this[i + 1] = initArrayjs189165js.arguments[i]
+                                              }
+                                              var d = new initArrayjs189165js(
+                                                  "星期日",
+                                                  "星期一",
+                                                  "星期二",
+                                                  "星期三",
+                                                  "星期四",
+                                                  "星期五",
+                                                  "星期六");
+                                              thedayjs189165js = (todayjs189165js.getYear() < 1900 ? todayjs189165js.getYear() + 1900 : todayjs189165js.getYear()) + "年" + [todayjs189165js.getMonth() + 1] + "月" + todayjs189165js.getDate() + "日";
+                                              intHoursjs189165js = todayjs189165js.getHours();
+                                              intMinutesjs189165js = todayjs189165js.getMinutes();
+                                              intSecondsjs189165js = todayjs189165js.getSeconds();
+                                              hoursjs189165js = intHoursjs189165js;
+                                              if (intHoursjs189165js == 0) {
+                                                  xfilejs189165js = "午夜";
+                                              } else if (intHoursjs189165js < 12) {
+                                                  xfilejs189165js = "上午";
+                                              } else if (intHoursjs189165js == 12) {
+                                                  xfilejs189165js = "正午";
+                                              } else {
+                                                  xfilejs189165js = "下午";
+                                              }
+                                              if (intMinutesjs189165js < 10) {
+                                                  minutesjs189165js = "0" + intMinutesjs189165js + ":";
+                                              } else {
+                                                  minutesjs189165js = intMinutesjs189165js + ":";
+                                              }
+                                              if (intSecondsjs189165js < 10) {
+                                                  secondsjs189165js = "0" + intSecondsjs189165js + " ";
+                                              } else {
+                                                  secondsjs189165js = intSecondsjs189165js + " ";
+                                              }
+                                              timeStringjs189165js += thedayjs189165js;
+                                              timeStringjs189165js += d[todayjs189165js.getDay() + 1];
+
+                                              timeStringjs189165js += hoursjs189165js + ":" + minutesjs189165js + secondsjs189165js;
+                                              document.getElementById("js189165jsclock").innerHTML = '<span  class="fontstyle189165" >' + timeStringjs189165js + '</font>';
+                                              window.setTimeout("js189165jstick();", 1000);
+                                          } catch (e) { }
+                                      }
+                                      js189165jstick();
+                                  </script>
+                              </div>
+                              <div class="col-md-1" style="display: flex; align-items: center;">
+                                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                  <img src="~/image/back.png" alt="back" class="img-fluid" onclick="history.back(); return false;">
+                              </div>
+                          </div> 
+          </nav> 
+        </div> 
+    <div id="sidebar"> 
+    <ul class="navbar-nav ml-auto"> 
+        <li><i class="icon fas fa-info-circle"></i>@Html.ActionLink("🏠︎平台信息", "PlatformInfo", "Home", new { area = "" }, new { @class = "nav-link sidebar-link" })</li> 
+        <li><i class="icon fas fa-chart-bar"></i>@Html.ActionLink("📊统计分析", "StatisticalAnalysis", "Home", new { area = "" }, new { @class = "nav-link sidebar-link" })</li> 
+        <li><i class="icon fas fa-upload"></i>@Html.ActionLink("⬆️数据上传", "UploadData", "Home", new { area = "" }, new { @class = "nav-link sidebar-link" })</li> 
+        <li><i class="icon fas fa-file-download"></i>@Html.ActionLink("⬇️报表下载", "DownloadReport", "Home", new { area = "" }, new { @class = "nav-link sidebar-link" })</li> 
+        <li><i class="icon fas fa-question-circle"></i>@Html.ActionLink("ℹ️关于我们", "AboutUs", "Home", new { area = "" }, new { @class = "nav-link sidebar-link" })</li> 
+        <li><i class="icon fas fa-user"></i>@Html.ActionLink("🤵个人中心", "PersonalCenter", "Home", new { area = "" }, new { @class = "nav-link sidebar-link" })</li> 
+        </ul> 
+        </div> 
+    <div class="content-wrapper"> 
+    @RenderBody() 
+        </div> 
+    <footer style="position: fixed; bottom: 0; width: 100%; background-color: #f8f9fa; padding: 0.7%; display: flex; justify-content: center;"> 
+    <hr style="margin: 1px;" /> 
+    <p style="margin: 0;">&copy; @DateTime.Now.Year - 安徽医科大学第一附属医院 重症医学科</p> 
+    </footer>
+    <script>
+        // 给当前点击的链接添加特定样式 
+        $(this).css({ 'color': 'blue' });
+    </script>
+</body>
+</html>

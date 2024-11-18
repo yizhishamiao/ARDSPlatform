@@ -1,0 +1,159 @@
+﻿@using ARDSPlatform.Models;
+@using ARDSPlatform.Controllers;
+@model ARDSPlatform.Models.StatisticalAnalysisViewModel
+@using Newtonsoft.Json;
+
+@{
+    ViewBag.Title = "统计分析";
+}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.min.js"></script>
+    <style>
+        /*html, body {
+            overflow: hidden;*/ /* 隐藏网页自带的滚动条 */
+        /*}*/
+        .card {
+            border: 1px solid #ddd;
+            padding: 3%;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 790px;
+            margin-left: 6.92%;
+            margin-top: -1.38%;
+            margin-right: -1.38%;
+            overflow-y: auto;
+        }
+
+        .section1 {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 365px;
+            margin-left: -2.78%;
+            margin-top: -2.76%;
+            margin-right: -2.78%;
+            margin-bottom: 5px;
+        }
+        .section2, .section3, .section4 {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 365px;
+            margin-left: -2.78%;
+            margin-top: 1.5%;
+            margin-right: -2.78%;
+            margin-bottom: 5px;
+        }
+
+        .col-md-6 {
+            margin-top: 1.5%;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+
+        <div class="section1">
+            <div class="col-md-6">
+                <div id="rdwChart" style="height: 380px;"></div>
+            </div>
+            <div class="col-md-6">
+                <div id="wbcChart" style="height: 380px;"></div>
+            </div>
+
+        </div>
+        <div class="section2">
+            <div class="col-md-6">
+                <div id="chlorideChart" style="height: 380px;"></div>
+            </div>
+            <div class="col-md-6">
+                <div id="paO2Chart" style="height: 380px;"></div>
+            </div>
+            
+            
+        </div>
+        <div class="section3">
+            <div class="col-md-6">
+                <div id="fiO2Chart" style="height: 380px;"></div>
+            </div>
+            <div class="col-md-6">
+                <div id="paCO2Chart" style="height: 380px;"></div>
+            </div>
+        </div>
+        <div class="section4">
+            <div class="col-md-6">
+                <div id="mchChart" style="height: 380px;"></div>
+            </div>
+        </div>
+
+    </div>
+
+
+
+        <script src="../Scripts/echarts.js"></script>
+        <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: '@Url.Action("GetStatisticalData", "Home")',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    if (data) {
+                        createChart('rdwChart', 'RDW分布柱状图', data.RDWData);
+                        createChart('wbcChart', 'WBCx1000分布柱状图', data.WBCx1000Data);
+                        createChart('chlorideChart', 'Chloride分布柱状图', data.ChlorideData);
+                        createChart('paO2Chart', 'PaO2分布柱状图', data.PaO2Data);
+                        createChart('fiO2Chart', 'FiO2分布柱状图', data.FiO2Data);
+                        createChart('paCO2Chart', 'PaCO2分布柱状图', data.PaCO2Data);
+                        createChart('mchChart', 'MCH分布柱状图', data.MCHData);
+                    }
+                }
+            });
+
+            function createChart(elementId, title, data) {
+                var chart = echarts.init(document.getElementById(elementId));
+                var option = {
+                    title: { text: title, left: 'center' },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        },
+                        formatter: function (params) {
+                            var value = params[0].name;
+                            var count = params[0].value;
+                            var chartTitle = title.split('分布柱状图')[0];
+                            return chartTitle + ': ' + value + '<br>人数: ' + count;
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        name: '计数',
+                        data: Object.keys(data).sort((a, b) => parseFloat(a) - parseFloat(b)),
+                    },
+                    yAxis: { type: 'value', name: '人数' },
+                    series: [{
+                        data: Object.values(data),
+                        type: 'bar'
+                    }]
+                };
+                chart.setOption(option);
+            }
+        });
+        </script>
+</body>
+</html>

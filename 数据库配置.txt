@@ -1,0 +1,5 @@
+server=localhost;
+database=ards_database;
+uid=root;
+pwd=ayyfy;
+port=3306;

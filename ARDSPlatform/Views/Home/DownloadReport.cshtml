@@ -1,0 +1,228 @@
+﻿
+@{
+    ViewBag.Title = "报表下载";
+}
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @*引入 Bootstrap 样式*@
+    <link href="/Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.min.js"></script>
+
+</head>
+<body>
+    <style>
+
+        .card {
+            border: 1px solid #ddd;
+            padding: 3%;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 790px;
+            margin-left: 6.92%;
+            margin-top: -1.38%;
+            margin-right: -1.38%;
+        }
+
+        .section1 {
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            height: 36%;
+            margin-left: 16%;
+            margin-right: 16%;
+        }
+
+        .btn-query {
+            width: 7%;
+            border: 1px solid #ddd;
+        }
+
+            .btn-query:hover {
+                background-color: skyblue; /* 悬停时的背景颜色，可以根据你的需求修改 */
+                color: white; /* 悬停时的文字颜色，可以根据你的需求修改 */
+            }
+
+        .btn-download {
+            width: 7%;
+            border: 1px solid #ddd;
+        }
+
+            .btn-download:hover {
+                background-color: skyblue; /* 悬停时的背景颜色，可以根据你的需求修改 */
+                color: white; /* 悬停时的文字颜色，可以根据你的需求修改 */
+            }
+
+        .FileTable {
+            background-color: white;
+            border: 1px solid #ddd;
+            height: 160%;
+            width:68%;
+            margin-left: 16%;
+            text-align: center;
+        }
+
+
+        table.FileTable th {
+            border: 1px solid #ddd; /* 增加垂直实线边框 */
+            padding: 8px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        table.FileTable td {
+            border: 1px solid #ddd; /* 增加垂直实线边框 */
+            padding: 8px;
+            vertical-align: middle;
+        }
+        /* 为表格单元格设置水平垂直居中 */
+        table tbody tr td {
+            display: table-cell;
+            text-align: center;
+            vertical-align: middle;
+        }
+    </style>
+    <div class="card">
+        <h5 style="text-align:center;margin-top :-1%;">条件筛选</h5>
+        <div class="section1">
+            <div class="form-group-inline" style="margin-top :1%;">
+                <label style="width: 30%; margin-left: 2.5%; font-weight: bold;">性别</label>
+                <input type="radio" id="maleRadio" name="gender" value="男性" /> <label for="maleRadio" style="width: 12.2%; ">男性</label>
+                <input type="radio" id="femaleRadio" name="gender" value="女性" /> <label for="femaleRadio" style="width: 12.2%; ">女性</label>
+                <input type="radio" id="allGenderRadio" name="gender" value="全部" checked /> <label for="allGenderRadio">全部</label>
+            </div>
+            <div>&nbsp;</div>
+            <div class="form-group-inline">
+                <label style="width: 30%; margin-left: 2.5%; font-weight: bold; ">年龄</label>
+                <input type="number" id="startAgeInput" min="0" max="150" placeholder="最小年龄" style=" width: 10%; margin-right: 5.5%;" />——
+                <input type="number" id="endAgeInput" min="0" max="150" placeholder="最大年龄" style=" width: 10%; margin-left: 5.5%;" />
+            </div>
+            <div>&nbsp;</div>
+            <div class="form-group-inline">
+                <label style="width: 30%; margin-left: 2.5%; font-weight: bold; ">结局</label>
+                <input type="radio" id="aliveRadio" name="isdead" value="生存" /> <label for="aliveRadio" style="width: 12.2%; ">生存</label>
+                <input type="radio" id="deadRadio" name="isdead" value="死亡" /> <label for="deadRadio" style="width: 12.2%; ">死亡</label>
+                <input type="radio" id="allOutcomeRadio" name="isdead" value="全部" checked /> <label for="allOutcomeRadio">全部</label>
+            </div>
+            <div>&nbsp;</div>
+            <div id="featuresContainer">
+                <label style="width: 30%; margin-left: 2.5%; font-weight: bold; ">特征</label>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); grid-gap: 7%; width:90%; margin-left:12%; margin-top:-2.5%;">
+                    <!-- 第1行 -->
+                    <div><input type="checkbox" id="feature1" value="RDW" /> <label for="feature1">RDW</label></div>
+                    <div><input type="checkbox" id="feature2" value="WBCx1000" /> <label for="feature2">WBCx1000</label></div>
+                    <div><input type="checkbox" id="feature3" value="Chloride" /> <label for="feature3">Chloride</label></div>
+                    <div><input type="checkbox" id="feature4" value="PaCO2" /> <label for="feature4">PaCO2</label></div>
+                    <!-- 第2行 -->
+                    <div><input type="checkbox" id="feature5" value="FiO2" /> <label for="feature5">FiO2</label></div>
+                    <div><input type="checkbox" id="feature6" value="PaO2" /> <label for="feature6">PaO2</label></div>
+                    <div><input type="checkbox" id="feature7" value="MCH" /> <label for="feature7">MCH</label></div>
+                    <div><input type="checkbox" id="feature8" value="选项8" /> <label for="feature8">选项8</label></div>
+                    <!-- 第3行 -->
+                    <div><input type="checkbox" id="feature9" value="选项9" /> <label for="feature9">选项9</label></div>
+                    <div><input type="checkbox" id="feature10" value="选项10" /> <label for="feature10">选项10</label></div>
+                    <div><input type="checkbox" id="feature11" value="选项11" /> <label for="feature11">选项11</label></div>
+                    <div><input type="checkbox" id="feature12" value="选项12" /> <label for="feature12">选项12</label></div>
+                </div>
+            </div>
+
+        </div>
+        <div>&nbsp;</div>
+        <table class="queryTable" ; style="width:100%">
+            <tr>
+                <td style="text-align:center;">
+                    <button id="queryBtn" class="btn btn-query">查询</button>
+                </td>
+            </tr>
+        </table>
+
+        <div class="section2">
+            <h5 style="text-align: center; margin-top: 2%;">结果概览</h5>
+            <table class="FileTable">
+                <thead>
+                    <tr>
+                        <th style="text-align: center; vertical-align: middle;">文件名称</th>
+                        <th style="text-align: center; vertical-align: middle;">文件类型</th>
+                        <th style="text-align: center; vertical-align: middle;">上传时间</th>
+                    </tr>
+                </thead>
+                <tbody id="FileBody" style="border-bottom: 1px solid #ddd; ">
+                </tbody>
+            </table>
+            <div>&nbsp;</div>
+            <table class="downloadTable" ; style="width:100%">
+                <tr>
+                    <td style="text-align:center;">
+                        <button id="downloadBtn" class="btn btn-download">下载</button>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+    </div>
+</body>
+</html>
+
+<script>
+        document.getElementById('queryBtn').addEventListener('click', function () {
+            var gender = document.querySelector('input[name="gender"]:checked').value;
+            var startAge = document.getElementById('startAgeInput').value;
+            var endAge = document.getElementById('endAgeInput').value;
+            var outcome = document.querySelector('input[name="isdead"]:checked').value;
+            var features = [];
+            var checkboxes = document.querySelectorAll('#featuresContainer input[type="checkbox"]');
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    features.push(checkboxes[i].value);
+                }
+            }
+
+            // 使用AJAX发送筛选条件到服务器进行查询
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '@Url.Action("QueryData", "DownloadReport")', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    // 处理服务器返回的查询结果并在页面上展示
+                    var result = JSON.parse(xhr.responseText);
+                    var fileTableBody = document.getElementById('FileBody');
+                    fileTableBody.innerHTML = '';
+                    result.forEach(function (patient) {
+                        var row = document.createElement('tr');
+                        var fileNameLink = document.createElement('a');
+                        fileNameLink.href = '@Url.Action("DownloadFile", "DownloadReport")?fileId=' + patient.FileId;
+                        fileNameLink.textContent = patient.FileName;
+                        row.appendChild(fileNameLink);
+                        row.appendChild(document.createElement('td')).textContent = patient.FileType;
+                        row.appendChild(document.createElement('td')).textContent = patient.UploadTime;
+                        fileTableBody.appendChild(row);
+                    });
+                }
+            };
+            var data = 'gender=' + gender + '&ageRange=' + startAge + '——' + endAge + '&outcome=' + outcome + '&features=' + features.join(',');
+            xhr.send(data);
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', function () {
+            // 获取要下载文件的相关信息，比如文件ID等，这里假设已经在页面上有相应的标识或者可以通过某种方式获取到
+            var fileNameLink = document.querySelector('#FileBody a');
+            if (fileNameLink) {
+                var fileId = fileNameLink.href.split('=')[1];
+                // 使用AJAX发送请求到服务器下载文件
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', '@Url.Action("DownloadFile", "DownloadReport")?fileId=' + fileId, true);
+                xhr.responseType = 'blob';
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        var blob = xhr.response;
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = 'file.xlsx'; // 示例文件名，实际需要根据文件记录获取准确的文件名
+                        link.click();
+                    }
+                };
+                xhr.send();
+            }
+        });
+</script>

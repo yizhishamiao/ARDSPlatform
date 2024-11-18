@@ -1,0 +1,346 @@
+﻿@using ARDSPlatform.Controllers;
+@using ARDSPlatform.Models;
+@model ARDSPlatform.Models.PlatformInfoViewModel
+
+@{
+    ViewBag.Title = "平台信息";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.min.js"></script>
+    <style>
+        /*html, body {
+            overflow: hidden;*/ /* 隐藏网页自带的滚动条 */
+        /*}*/
+
+        .card {
+            border: 1px solid #ddd;
+            padding: 3%;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 790px;
+            margin-top: -3.5%;
+            margin-left: -1.2%;
+            margin-right: -3.5%;
+        }
+
+        .card-body {
+            border: 1px solid #ddd;
+            padding: 4%;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 773px;
+            margin-top: -2.4%;
+            margin-left: -2.4%;
+            margin-right: -2.4%;
+        }
+
+        .split-container {
+            display: flex;
+            height: 100%;
+        }
+
+        .left-section {
+            flex: 1;
+            position: relative;
+            height :110%;
+            margin-top :-3%;
+            margin-left :-2.3%;
+            overflow: auto;
+        }
+
+        .table-scrollable {
+            width: 98%;
+            max-height: calc(100vh - 200px); /* 调整最大高度以适应页面布局 */
+            overflow-y: auto;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        table tr:hover {
+            background-color: #ddd;
+        }
+
+        .vertical-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 48.5%;
+            width: 1px;
+            background-color: #ccc;
+            height: 773px;
+            margin-top: 0.5%;
+        }
+
+        .right-section {
+            flex: 1;
+            padding-left: 0.7%;
+            position: relative;
+        }
+
+        
+    </style>
+</head>
+<body>
+    <div class="content-wrapper">
+        <div class="card">
+            <div class="card-body">
+                <div class="split-container">
+                    <div class="left-section">
+                        <h5>患者总数：@Model.PatientCount 人</h5>
+                        <div id="map" style="width: 100%; height: 600px;"></div>
+                        <div style="overflow:auto;">
+                            <table class="table table-scrollable">
+                                <thead>
+                                    <tr>
+                                        <th onclick="sortTable(0)">所属城市</th>
+                                        <th onclick="sortTable(1)">患者占比</th>
+                                        <th onclick="sortTable(2)">患者总数</th>
+                                        <th onclick="sortTable(3)">平均住院时间</th>
+                                        <th onclick="sortTable(4)">死亡率</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cityTableBody">
+                                    @{ decimal totalCount = @Model.PatientCount; }
+                                    @foreach (var item in Model.CityDistribution)
+                                    {
+                                        <tr>
+                                            <td>@item.City</td>
+                                            @{
+                                                decimal percentage = (item.Count / totalCount) * 100;
+                                                decimal roundedPercentage = decimal.Round(percentage, 2);
+                                            }
+                                            <td>@roundedPercentage%</td>
+                                            <td>@item.Count</td>
+                                            <td>@item.AverageStay</td>
+                                            @{
+                                                double percentage2 = item.MortalityRateValue;
+                                                double roundedPercentage2 = Math.Round(percentage2, 1);
+                                            }
+                                            <td>@roundedPercentage2%</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+                    <div class="vertical-line"></div>
+                    <div class="right-section">
+                        <div id="genderChart" style="width: 100%; height: 380px;"></div>
+                        <div id="ageChart" style="width: 100%; height: 380px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+<script src="../Scripts/echarts.js"></script>
+<script>
+
+    function sortTable(columnIndex) {
+        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+        table = document.querySelector(".table-scrollable");
+        switching = true;
+        // 设置排序方向为升序
+        dir = "asc";
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+            // 循环表格的所有行（除了标题）
+            for (i = 1; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+                x = rows[i].getElementsByTagName("TD")[columnIndex];
+                y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
+                // 检查是否需要根据排序方向交换位置
+                if (dir == "asc") {
+                    if (parseFloat(x.innerHTML) > parseFloat(y.innerHTML)) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                } else if (dir == "desc") {
+                    if (parseFloat(x.innerHTML) < parseFloat(y.innerHTML)) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+            }
+            if (shouldSwitch) {
+                // 如果需要交换，则执行交换并标记完成交换
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+                switchcount++;
+            } else {
+                // 如果完成了一轮且没有需要交换的，设置方向为降序并再次运行
+                if (switchcount == 0 && dir == "asc") {
+                    dir = "desc";
+                    switching = true;
+                }
+            }
+        }
+    }
+    // 定义 GetPercentage 函数
+    function GetPercentage(count, totalCount) {
+        return (count * 100.0 / totalCount);
+    }
+
+
+
+
+    // 使用 fetch API 异步加载 GeoJSON 数据
+    fetch('/GeoJSON/Anhui.geoJson')
+      .then(function (response) {
+            return response.json(); // 解析 JSON 数据
+        })
+      .then(function (geoJson) {
+            // 注册地图
+            echarts.registerMap('安徽省', geoJson);
+            // 初始化地图
+                var mapChart = echarts.init(document.getElementById('map'));
+          mapChart.showLoading();
+            var optionMap = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}<br/>{c} 名患者'
+                },
+                toolbox: {
+                    show: true,
+                    orient: 'vertical',
+                    left: 'right',
+                    top: 'center',
+                    feature: {
+                        dataView: { readOnly: false },
+                        restore: {},
+                        saveAsImage: {}
+                    }
+                },
+                visualMap: {
+                    min: 0,
+                    max: 2000,
+                    realtime: false,
+                    calculable: true,
+                    inRange: {
+                        color: ['lightskyblue', 'yellow', 'orangered']
+                    },
+                    
+                },
+                series: [{
+                    name: '安徽省各市患者人数',
+                    type: 'map',
+                    map: '安徽省',
+                    label: {
+                        show: true
+                    },
+                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.CityDistribution.Select(c => new { name = c.City, value = c.Count }))),
+                    // 如果有需要可以添加自定义名称映射
+                    
+                }]
+            };
+            mapChart.setOption(optionMap);
+            mapChart.hideLoading();
+        });
+
+
+
+// 初始化性别分布图表
+        var genderChart = echarts.init(document.getElementById('genderChart'));
+
+    // 获取模型中的性别分布数据
+    var genderDistribution = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.GenderDistribution));
+    var maleCount = 0;
+    var femaleCount = 0;
+    genderDistribution.forEach(item => {
+        if (item.Gender === '0') {
+            femaleCount += item.Count;
+        } else if (item.Gender === '1') {
+            maleCount += item.Count;
+        }
+    });
+    var totalPatients = @Model.PatientCount;
+    var optionGender = {
+        title: {
+            text: '性别分布饼图',
+            left: 'center'
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: '{a} <br/>{b}: {c}人(占{d}%)'
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'left'
+        },
+        series: [
+            {
+                name: '性别分布',
+                type: 'pie',
+                data: [
+                    { value: maleCount, name: '男' },
+                    { value: femaleCount, name: '女' },
+                ],
+                label: {
+                    formatter: '{b}: {c}人(占{d}%)'
+                }
+            }
+        ]
+    };
+    genderChart.setOption(optionGender);
+
+
+
+
+ // 初始化年龄分布图表
+        var ageChart = echarts.init(document.getElementById('ageChart'));
+    // 在客户端对年龄分布数据进行排序
+    var ageDistribution = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.AgeDistribution));
+    var sortedAgeDistribution = ageDistribution.sort((a, b) => a.Age - b.Age);
+    var optionAge = {
+        title: {
+            text: '年龄分布柱状图',
+            left: 'center'
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow'
+            },
+            formatter: function (params) {
+                var age = params[0].name;
+                var count = params[0].value;
+                return '年龄: ' + age + '<br>人数: ' + count;
+            }
+        },
+        xAxis: {
+            type: 'category',
+            data: sortedAgeDistribution.map(item => item.Age),
+            name: '年龄',
+            min:0
+        },
+        yAxis: {
+            type: 'value',
+            name: '人数'
+        },
+        series: [
+            {
+                name: '年龄分布',
+                type: 'bar',
+                data: sortedAgeDistribution.map(item => item.Count)
+            }
+        ]
+    };
+    ageChart.setOption(optionAge);
+
+</script>
+
+

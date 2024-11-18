@@ -1,0 +1,216 @@
+﻿@model ARDSPlatform.Models.PersonalCenterViewModel
+@{
+    ViewBag.Title = "个人中心";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @*引入 Bootstrap 样式*@
+    <link href="/Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.min.js"></script>
+
+</head>
+<body>
+    <style>
+        .card {
+            border: 1px solid #ddd;
+            padding: 3%;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 790px;
+            margin-left: 6.92%;
+            margin-top: -1.38%;
+            margin-right: -1.38%;
+        }
+
+        .section1 {
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 390px;
+            margin-left: -2.77%;
+            margin-top: -2.74%;
+            margin-right: -2.77%;
+            margin-bottom: 1%; /* 第一个小框距离第二个小框 5px */
+        }
+
+        .section2 {
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 390px;
+            margin-left: -2.77%;
+            margin-right: -2.77%;
+            margin-bottom: -2.7%; /* 设置第二个小框距离底部的距离是 -20px */
+        }
+
+        .btn-change {
+            width: 7%;
+            border: 1px solid #ddd;
+        }
+
+            .btn-change:hover {
+                background-color: skyblue; /* 悬停时的背景颜色，可以根据你的需求修改 */
+                color: white; /* 悬停时的文字颜色，可以根据你的需求修改 */
+            }
+
+        .loginHistoryTable {
+            background-color: white;
+            border: 1px solid #ddd;
+            height: 280px;
+            width: 50%;
+            margin-left: 25%;
+            text-align: center;
+        }
+
+        .form-group-inline {
+            display: flex;
+            align-items: center;
+            width: 25%;
+            margin-left: 38%;
+        }
+
+        .password-info {
+            color: red;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        table.loginHistoryTable th {
+            border: 1px solid #ddd; /* 增加垂直实线边框 */
+            padding: 8px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        table.loginHistoryTable td  {
+            border: 1px solid #ddd; /* 增加垂直实线边框 */
+            padding: 8px;
+            vertical-align: middle;
+        }
+        /* 为表格单元格设置水平垂直居中 */
+        table tbody tr td {
+            display: table-cell;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+
+
+
+    </style>
+    <div class="card">
+        <div class="section1">
+            <h5 style="text-align:center;margin-top :2%;">密码修改</h5>
+            <div>&nbsp;</div>
+            <div class="form-group-inline">
+                <label style="width:30%;">原密码:</label>
+                @Html.PasswordFor(m => m.OldPassword, new { @class = "form-control", placeholder = "请输入" })
+            </div>
+            <div>&nbsp;</div>
+            <div class="form-group-inline">
+                <label style="width:30%;">新密码:</label>
+                @Html.PasswordFor(m => m.NewPassword, new { @class = "form-control", placeholder = "请输入" })
+            </div>
+            <div>&nbsp;</div>
+            <div class="form-group-inline">
+                <label style="width:30%;">确认密码:</label>
+                @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", placeholder = "请输入" })
+            </div>
+            <div>&nbsp;</div>
+            <table class="changePasswordTable"; style="width:100%">
+                <tr>
+                    <td style="text-align:center;">
+                        <button id="changePasswordBtn" class="btn btn-change">修改</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section2">
+            <h5 style="text-align: center; margin-top: 2%;">登录历史</h5>
+            <table class="loginHistoryTable">
+                <thead>
+                    <tr>
+                        <th style="text-align: center; vertical-align: middle;">登录 IP</th>
+                        <th style="text-align: center; vertical-align: middle;">登录时间</th>
+                    </tr>
+                </thead>
+                <tbody id="loginHistoryBody" style="border-bottom: 1px solid #ddd; ">
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</body>
+</html>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // 当点击修改密码按钮时
+$('#changePasswordBtn').click(function () {
+    // 获取输入的值
+    var oldPassword = $('#OldPassword').val();
+    var newPassword = $('#NewPassword').val();
+    var confirmPassword = $('#ConfirmPassword').val();
+
+
+    // 进行简单的输入验证
+    if (!oldPassword || !newPassword || !confirmPassword) {
+        Swal.fire('提示', '请填写所有密码字段！', 'warning');
+        return;
+    }
+    if (newPassword === oldPassword) {
+        Swal.fire('提示', '新密码不可和原密码相同！', 'warning');
+        return;
+    }
+    if (newPassword !== confirmPassword) {
+        Swal.fire('提示', '两次密码不同！', 'warning');
+        return;
+    }
+
+    // 发起 Ajax 请求修改密码
+    $.ajax({
+        url: '@Url.Action("ChangePassword", "Home")',
+        type: 'POST',
+        data: { oldPassword: oldPassword, newPassword: newPassword },
+        success: function (response) {
+            if (response.success) {
+                Swal.fire('成功', '密码修改成功！', 'success');
+            } else {
+                Swal.fire('失败', '密码修改失败：' + response.message, 'error');
+            }
+        },
+        error: function () {
+            Swal.fire('错误', '发生错误，请稍后重试。', 'error');
+        }
+    });
+});
+
+// 获取登录历史
+$.ajax({
+    url: '@Url.Action("GetLoginHistory", "PersonalCenter")',
+    type: 'GET',
+    data: { count: 5 }, // 请求最新的五条记录
+    success: function (response) {
+        console.log('Received login history:', response);
+        var loginHistoryBody = $('#loginHistoryBody');
+        loginHistoryBody.empty();
+        if (response.length > 0) {
+            console.log('有登录历史记录，开始填充表格');
+            response.forEach(item => {
+                loginHistoryBody.append('<tr><td>' + item.loginIP + '</td><td>' + item.loginTime + '</td></tr>');
+            });
+        } else {
+            console.log('没有登录历史记录');
+            loginHistoryBody.append('<tr><td colspan="2">没有登录记录</td></tr>');
+        }
+    },
+    error: function () {
+        Swal.fire('错误', '获取登录历史失败。', 'error');
+    }
+});
+
+
+</script>
